@@ -32,6 +32,8 @@
 		this.videoCanvas = undefined;
 		this.videoRenderObject = undefined;
 
+		this.videoFramerate = 30;
+
 		function isIOS10 () {
 			var ua = navigator.userAgent, tem, M = ua.match( /(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i ) || [];
 
@@ -70,11 +72,9 @@
 		src = ( src || this.src ) || '';
 		options = ( options || this.options ) || {};
 
-		this.videoCanvas = options.videoCanvas || document.createElement( 'canvas' );
-		this.videoCanvas.width = video.videoWidth;
-		this.videoCanvas.height = video.videoHeight;
-
 		this.videoElement = options.videoElement || document.createElement( 'video' );
+		this.videoCanvas = options.videoCanvas || document.createElement( 'canvas' );
+		
 		this.videoElement.muted = options.muted || false;
 		this.videoElement.loop = ( options.loop !== undefined ) ? options.loop : true;
 		this.videoElement.autoplay = ( options.autoplay !== undefined ) ? options.autoplay : false;
@@ -129,18 +129,21 @@
 	 */
 	PANOLENS.VideoPanorama.prototype.setVideoTexture = function ( video, canvas ) {
 
-		var videoTexture, videoContext, updateCallback;
+		var videoTexture, videoRenderObject, videoContext, scene, updateCallback;
 
 		if ( !video || !canvas ) return;
 
-		videoContext = canvas.getContext( '2d' );
+		canvas.width = video.videoWidth;
+		canvas.height = video.videoHeight;
+
+		videoContext = canvas.getContext('2d');
 
 		videoTexture = new THREE.Texture( canvas );
 		videoTexture.generateMipmaps = false;
 		videoTexture.minFilter = THREE.LinearFilter;
 		videoTexture.magFilter = THREE.LinearFilter;
 
-		this.videoRenderObject = {
+		videoRenderObject = {
 
 			video : video,
 			videoContext : videoContext,
@@ -167,10 +170,12 @@
 		};
 
 		// Draw the first frame
-		this.videoRenderObject.videoContext.drawImage( this.videoRenderObject.video, 0, 0 );
-		this.videoRenderObject.videoTexture.needsUpdate = true;
+		videoContext.drawImage( video, 0, 0 );
+		videoTexture.needsUpdate = true;
 
-		this.updateTexture( this.videoRenderObject.videoTexture );
+		this.updateTexture( videoTexture );
+
+		this.videoRenderObject = videoRenderObject;
 
 		// Notify Viewer to render object
 		/**
@@ -180,7 +185,7 @@
 		 * @property {string} method - 'addUpdateCallback'
 		 * @property {*} data - The callback function to update video
 		 */
-		this.dispatchEvent( { type: 'panolens-viewer-handler', method: 'addUpdateCallback', data: updateCallback.bind( this.videoRenderObject ) } );
+		this.dispatchEvent( { type: 'panolens-viewer-handler', method: 'addUpdateCallback', data: updateCallback.bind( videoRenderObject ) } );
 		
 	};
 
