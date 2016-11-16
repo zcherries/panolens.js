@@ -30,7 +30,7 @@
 
 		this.videoElement = undefined;
 		this.videoCanvas = undefined;
-		this.videoRenderObject = undefined;
+		this.videoRenderObject = {};
 
 		function isIOS10 () {
 			var ua = navigator.userAgent, tem, M = ua.match( /(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i ) || [];
@@ -71,8 +71,6 @@
 		options = ( options || this.options ) || {};
 
 		this.videoCanvas = options.videoCanvas || document.createElement( 'canvas' );
-		this.videoCanvas.width = video.videoWidth;
-		this.videoCanvas.height = video.videoHeight;
 
 		this.videoElement = options.videoElement || document.createElement( 'video' );
 		this.videoElement.muted = options.muted || false;
@@ -87,6 +85,9 @@
 		this.videoElement.load();
 
 		this.videoElement.onloadeddata = function(){
+
+			scope.videoCanvas.width = scope.videoElement.videoWidth;
+			scope.videoCanvas.height = scope.videoElement.videoHeight;
 
 			scope.setVideoTexture( scope.videoElement, scope.videoCanvas );
 

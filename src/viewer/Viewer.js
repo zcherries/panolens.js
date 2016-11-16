@@ -51,7 +51,7 @@
 		options.dwellTime = options.dwellTime || 1500;
 		options.autoReticleSelect = options.autoReticleSelect !== undefined ? options.autoReticleSelect : true;
 		options.passiveRendering = options.passiveRendering || false;
-		options.viewIndicator = options.viewIndicator || true;
+		options.viewIndicator = options.viewIndicator || false;
 		options.indicatorSize = options.indicatorSize || 30;
 
 		this.options = options;
@@ -1592,6 +1592,7 @@
 		this.container.appendChild( viewIndicatorDiv );
 
 		var viewIndicator = document.getElementById( "view-indicator" );
+		viewIndicator.style.filter = "drop-shadow(rgba(0, 0, 0, 0.7) 0px 0px 5px)";
 		var indicator = document.getElementById( "indicator" );
 
 		var setIndicatorD = function () {
@@ -1627,7 +1628,7 @@
 		var indicatorOnMouseLeave = function () {
 
 			viewIndicatorDiv.style.opacity = "0.7";
-			viewIndicator.style.filter = "drop-shadow(rgb(255, 255, 255) 0px 0px 5px)";
+			viewIndicator.style.filter = "drop-shadow(rgba(0, 0, 0, 0.7) 0px 0px 5px)";
 
 		};
 

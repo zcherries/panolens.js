@@ -3636,9 +3636,7 @@ PANOLENS.StereographicShader = {
 
 		this.videoElement = undefined;
 		this.videoCanvas = undefined;
-		this.videoRenderObject = undefined;
-
-		this.videoFramerate = 30;
+		this.videoRenderObject = {};
 
 		function isIOS10 () {
 			var ua = navigator.userAgent, tem, M = ua.match( /(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i ) || [];
@@ -3678,9 +3676,9 @@ PANOLENS.StereographicShader = {
 		src = ( src || this.src ) || '';
 		options = ( options || this.options ) || {};
 
-		this.videoElement = options.videoElement || document.createElement( 'video' );
 		this.videoCanvas = options.videoCanvas || document.createElement( 'canvas' );
-		
+
+		this.videoElement = options.videoElement || document.createElement( 'video' );
 		this.videoElement.muted = options.muted || false;
 		this.videoElement.loop = ( options.loop !== undefined ) ? options.loop : true;
 		this.videoElement.autoplay = ( options.autoplay !== undefined ) ? options.autoplay : false;
@@ -3693,6 +3691,9 @@ PANOLENS.StereographicShader = {
 		this.videoElement.load();
 
 		this.videoElement.onloadeddata = function(){
+
+			scope.videoCanvas.width = scope.videoElement.videoWidth;
+			scope.videoCanvas.height = scope.videoElement.videoHeight;
 
 			scope.setVideoTexture( scope.videoElement, scope.videoCanvas );
 
@@ -3735,21 +3736,18 @@ PANOLENS.StereographicShader = {
 	 */
 	PANOLENS.VideoPanorama.prototype.setVideoTexture = function ( video, canvas ) {
 
-		var videoTexture, videoRenderObject, videoContext, scene, updateCallback;
+		var videoTexture, videoContext, updateCallback;
 
 		if ( !video || !canvas ) return;
 
-		canvas.width = video.videoWidth;
-		canvas.height = video.videoHeight;
-
-		videoContext = canvas.getContext('2d');
+		videoContext = canvas.getContext( '2d' );
 
 		videoTexture = new THREE.Texture( canvas );
 		videoTexture.generateMipmaps = false;
 		videoTexture.minFilter = THREE.LinearFilter;
 		videoTexture.magFilter = THREE.LinearFilter;
 
-		videoRenderObject = {
+		this.videoRenderObject = {
 
 			video : video,
 			videoContext : videoContext,
@@ -3776,12 +3774,10 @@ PANOLENS.StereographicShader = {
 		};
 
 		// Draw the first frame
-		videoContext.drawImage( video, 0, 0 );
-		videoTexture.needsUpdate = true;
+		this.videoRenderObject.videoContext.drawImage( this.videoRenderObject.video, 0, 0 );
+		this.videoRenderObject.videoTexture.needsUpdate = true;
 
-		this.updateTexture( videoTexture );
-
-		this.videoRenderObject = videoRenderObject;
+		this.updateTexture( this.videoRenderObject.videoTexture );
 
 		// Notify Viewer to render object
 		/**
@@ -3791,7 +3787,7 @@ PANOLENS.StereographicShader = {
 		 * @property {string} method - 'addUpdateCallback'
 		 * @property {*} data - The callback function to update video
 		 */
-		this.dispatchEvent( { type: 'panolens-viewer-handler', method: 'addUpdateCallback', data: updateCallback.bind( videoRenderObject ) } );
+		this.dispatchEvent( { type: 'panolens-viewer-handler', method: 'addUpdateCallback', data: updateCallback.bind( this.videoRenderObject ) } );
 		
 	};
 
@@ -6852,7 +6848,7 @@ PANOLENS.StereographicShader = {
 		options.dwellTime = options.dwellTime || 1500;
 		options.autoReticleSelect = options.autoReticleSelect !== undefined ? options.autoReticleSelect : true;
 		options.passiveRendering = options.passiveRendering || false;
-		options.viewIndicator = options.viewIndicator || true;
+		options.viewIndicator = options.viewIndicator || false;
 		options.indicatorSize = options.indicatorSize || 30;
 
 		this.options = options;
@@ -8393,6 +8389,7 @@ PANOLENS.StereographicShader = {
 		this.container.appendChild( viewIndicatorDiv );
 
 		var viewIndicator = document.getElementById( "view-indicator" );
+		viewIndicator.style.filter = "drop-shadow(rgba(0, 0, 0, 0.7) 0px 0px 5px)";
 		var indicator = document.getElementById( "indicator" );
 
 		var setIndicatorD = function () {
@@ -8428,7 +8425,7 @@ PANOLENS.StereographicShader = {
 		var indicatorOnMouseLeave = function () {
 
 			viewIndicatorDiv.style.opacity = "0.7";
-			viewIndicator.style.filter = "drop-shadow(rgb(255, 255, 255) 0px 0px 5px)";
+			viewIndicator.style.filter = "drop-shadow(rgba(0, 0, 0, 0.7) 0px 0px 5px)";
 
 		};
 
